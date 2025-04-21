@@ -9,7 +9,7 @@ pipeline {
         stage('Set Version') {
             steps {
                 script {
-                    env.VERSION = "v1.${BUILD_NUMBER}"
+                    env.VERSION = "1.0.${BUILD_NUMBER}"
                     echo "Using version: ${env.VERSION}"
                 }
             }
@@ -71,4 +71,3 @@ pipeline {
         }
     }
 }
-
