@@ -9,7 +9,7 @@ pipeline {
         stage('Set Version') {
             steps {
                 script {
-                    env.VERSION = "1.0.${BUILD_NUMBER}"
+                    env.VERSION = "v1.${BUILD_NUMBER}"
                     echo "Using version: ${env.VERSION}"
                 }
             }
@@ -37,17 +37,6 @@ pipeline {
                         dockerImage.push()
                         latestImage.push()
                     }
-                }
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    sh """
-                    kubectl set image deployment/webapp webapp=${DOCKER_IMAGE_NAME}:${env.VERSION} --record
-                    kubectl rollout status deployment/webapp
-                    """
                 }
             }
         }
