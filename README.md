@@ -37,5 +37,9 @@ docker run -p 5000:5000 flask-docker-app
 Open: http://localhost:5000
 You should see: "Hello, this is a Dockerized Flask App! by Shams."
 
+### 🐳 Docker Image
+Available on Docker Hub:  
+👉 https://hub.docker.com/r/kshamsuddin/docker-webapp
+
 👤 Author
 Khaja Shamsuddin Ahmed
