@@ -3,23 +3,28 @@ pipeline {
 
     environment {
         DOCKER_IMAGE_NAME = 'kshamsuddin/docker-webapp'
-        VERSION = ''
     }
 
     stages {
+        stage('Set Version') {
+            steps {
+                script {
+                    env.VERSION = "v1.${BUILD_NUMBER}"
+                    echo "Using version: ${env.VERSION}"
+                }
+            }
+        }
+
         stage('Clone Repository') {
             steps {
                 git 'https://github.com/k-shamsuddin/docker-webapp.git'
-                script {
-                    VERSION = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${VERSION}")
+                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${env.VERSION}")
                     latestImage = docker.build("${DOCKER_IMAGE_NAME}:latest")
                 }
             }
@@ -36,10 +41,21 @@ pipeline {
             }
         }
 
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sh """
+                    kubectl set image deployment/webapp webapp=${DOCKER_IMAGE_NAME}:${env.VERSION} --record
+                    kubectl rollout status deployment/webapp
+                    """
+                }
+            }
+        }
+
         stage('Clean up Images') {
             steps {
                 script {
-                    sh "docker rmi ${DOCKER_IMAGE_NAME}:${VERSION} || true"
+                    sh "docker rmi ${DOCKER_IMAGE_NAME}:${env.VERSION} || true"
                     sh "docker rmi ${DOCKER_IMAGE_NAME}:latest || true"
                 }
             }
@@ -48,7 +64,7 @@ pipeline {
 
     post {
         success {
-            echo "Docker images ${DOCKER_IMAGE_NAME}:${VERSION} and :latest pushed successfully and cleaned up."
+            echo "Docker images ${DOCKER_IMAGE_NAME}:${env.VERSION} and :latest pushed successfully, deployed to K8s, and cleaned up."
         }
         failure {
             echo "Pipeline failed."
